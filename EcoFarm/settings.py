@@ -27,6 +27,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Local HTTPS dev origins (for CSRF checks)
+CSRF_TRUSTED_ORIGINS = [
+    'https://localhost:8000',
+    'https://127.0.0.1:8000',
+]
+
 
 # Application definition
 

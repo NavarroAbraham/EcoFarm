@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Pago exitoso - EcoFarm{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Pago completado</h1>
+    <p>Pedido: #{{ order.id }}</p>
+    <p>Cliente: {{ order.customer_name }} ({{ order.customer_email }})</p>
+    <p>Monto: {{ order.total_amount }}</p>
+    <p>Proveedor: {{ payment.provider }}</p>
+    <p>Referencia: {{ payment.external_id }}</p>
+</div>
+{% endblock %}
