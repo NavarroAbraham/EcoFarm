@@ -2,30 +2,23 @@
 
 ## Configuración del proyecto
 
-1. Crear entorno virtual:
-```bash
-python -m venv venv
-source venv/bin/activate  # En Linux/Mac
-# venv\Scripts\activate  # En Windows
-```
-
-2. Instalar dependencias:
+1. Instalar dependencias:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Ejecutar migraciones:
+2. Ejecutar migraciones:
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-4. Crear superusuario:
+3. Crear superusuario:
 ```bash
 python manage.py createsuperuser
 ```
 
-5. Ejecutar servidor:
+4. Ejecutar servidor:
 ```bash
 python manage.py runserver
 ```
