@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -22,6 +23,12 @@ class Order(models.Model):
 
 	def __str__(self):
 		return f"Order #{self.pk} - {self.customer_name}"
+
+	def clean(self):
+		super().clean()
+		# business validation: total must be positive
+		if self.total_amount is not None and self.total_amount <= 0:
+			raise ValidationError({'total_amount': 'Total amount must be greater than zero.'})
 
 	def mark_paid(self):
 		self.status = self.STATUS_PAID
@@ -52,6 +59,14 @@ class Payment(models.Model):
 
 	def __str__(self):
 		return f"Payment #{self.pk} - {self.provider}"
+
+	def clean(self):
+		super().clean()
+		# the amount should always be positive and match the order total
+		if self.amount is not None and self.amount <= 0:
+			raise ValidationError({'amount': 'Payment amount must be positive.'})
+		if self.order_id and self.amount != self.order.total_amount:
+			raise ValidationError('Payment amount must equal the order total.')
 
 	def mark_succeeded(self, external_id):
 		self.status = self.STATUS_SUCCEEDED

@@ -41,3 +41,15 @@ EcoFarm/
 ├── manage.py
 └── requirements.txt
 ```
+
+## API REST (Django REST Framework)
+
+El sistema expone un par de endpoints para crear órdenes y consultar su estado.
+
+| Método | URL                  | Descripción                                   |
+|--------|----------------------|-----------------------------------------------|
+| POST   | `/core/api/orders/`  | Crear `Order` + `Payment`. Retorna 201 con el objeto creado y el pago asociado. Se esperan los campos `customer_name`, `customer_email`, `total_amount` y `provider` (cadena libre; si el proveedor no es reconocido el endpoint responde 409).\
+| GET    | `/core/api/orders/<id>/` | Obtener los datos de una orden existente (incluye pagos). 404 si no existe.
+
+Los errores de validación devuelven 400, y si se solicita un `provider` no soportado se responde con 409.
+
