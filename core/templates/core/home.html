@@ -3,11 +3,28 @@
 {% block title %}Inicio - EcoFarm{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Bienvenido a EcoFarm</h1>
-    <p>Tu plataforma de agricultura ecológica</p>
-    <p>
-        <a href="{% url 'core:order-create' %}">Crear pedido y pago</a>
-    </p>
+
+<div class="center-wrapper">
+
+<div class="card hero-card">
+
+<h1>🌱 Bienvenido a EcoFarm</h1>
+
+<p class="subtitle">
+Tu plataforma de agricultura ecológica
+</p>
+
+<p class="description">
+Conecta con productos frescos cultivados de forma responsable
+y apoya a los agricultores locales mientras cuidas el planeta.
+</p>
+
+<a class="btn-primary" href="{% url 'core:order-create' %}">
+Crear pedido y pago
+</a>
+
 </div>
+
+</div>
+
 {% endblock %}

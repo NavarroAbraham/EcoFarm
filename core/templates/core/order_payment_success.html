@@ -3,12 +3,47 @@
 {% block title %}Pago exitoso - EcoFarm{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Pago completado</h1>
-    <p>Pedido: #{{ order.id }}</p>
-    <p>Cliente: {{ order.customer_name }} ({{ order.customer_email }})</p>
-    <p>Monto: {{ order.total_amount }}</p>
-    <p>Proveedor: {{ payment.provider }}</p>
-    <p>Referencia: {{ payment.external_id }}</p>
+
+<div class="center-wrapper">
+
+<div class="card success-card">
+
+<div class="success-icon">✅</div>
+
+<h1>Pago completado</h1>
+
+<p class="subtitle">
+Tu pedido fue procesado correctamente
+</p>
+
+<div class="order-details">
+
+<p><strong>Pedido:</strong> #{{ order.id }}</p>
+
+<p><strong>Cliente:</strong>
+{{ order.customer_name }} ({{ order.customer_email }})
+</p>
+
+<p><strong>Monto:</strong>
+${{ order.total_amount }}
+</p>
+
+<p><strong>Proveedor:</strong>
+{{ payment.provider }}
+</p>
+
+<p><strong>Referencia:</strong>
+{{ payment.external_id }}
+</p>
+
 </div>
+
+<a href="/" class="btn-primary">
+Volver al inicio
+</a>
+
+</div>
+
+</div>
+
 {% endblock %}

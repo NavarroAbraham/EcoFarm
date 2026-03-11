@@ -1,30 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}EcoFarm{% endblock %}</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    {% block extra_css %}{% endblock %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}EcoFarm{% endblock %}</title>
+
+{% load static %}
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+{% block extra_css %}{% endblock %}
 </head>
+
 <body>
-    <header>
-        <nav>
-            <h1>EcoFarm</h1>
-            <!-- Agregar navegación aquí -->
-        </nav>
-    </header>
-    
-    <main>
-        {% block content %}
-        {% endblock %}
-    </main>
-    
-    <footer>
-        <p>&copy; 2026 EcoFarm. Todos los derechos reservados.</p>
-    </footer>
-    
-    {% block extra_js %}{% endblock %}
+
+<header>
+<nav class="navbar">
+<h1 class="logo">🌱 EcoFarm</h1>
+
+<ul class="nav-links">
+<li><a href="/">Inicio</a></li>
+<li><a href="{% url 'core:order-create' %}">Crear pedido</a></li>
+</ul>
+</nav>
+</header>
+
+<main class="main-container">
+{% block content %}
+{% endblock %}
+</main>
+
+<footer>
+<p>© 2026 EcoFarm — Agricultura sostenible</p>
+</footer>
+
 </body>
 </html>

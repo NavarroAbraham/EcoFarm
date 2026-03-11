@@ -1,47 +1,198 @@
-/* Reset */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* RESET */
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
 }
 
-body {
-    font-family: 'Arial', sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background-color: #f4f4f4;
+/* BODY */
+
+body{
+font-family:'Poppins',sans-serif;
+background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+color:#333;
+min-height:100vh;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+/* NAVBAR */
+
+header{
+background:#2e7d32;
+box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
 
-header {
-    background: #2c3e50;
-    color: #fff;
-    padding: 1rem 0;
+.navbar{
+max-width:1200px;
+margin:auto;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:20px;
 }
 
-header nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+.logo{
+color:white;
+font-weight:600;
 }
 
-main {
-    min-height: calc(100vh - 200px);
-    padding: 2rem 0;
+.nav-links{
+list-style:none;
+display:flex;
+gap:25px;
 }
 
-footer {
-    background: #2c3e50;
-    color: #fff;
-    text-align: center;
-    padding: 1rem 0;
-    margin-top: 2rem;
+.nav-links a{
+color:white;
+text-decoration:none;
+font-weight:500;
+transition:0.3s;
+}
+
+.nav-links a:hover{
+opacity:0.7;
+}
+
+/* MAIN */
+
+.main-container{
+min-height:calc(100vh - 160px);
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+/* CENTER WRAPPER */
+
+.center-wrapper{
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:40px 20px;
+}
+
+/* TARJETAS */
+
+.card{
+background:white;
+padding:40px;
+border-radius:16px;
+box-shadow:0 15px 35px rgba(0,0,0,0.1);
+max-width:550px;
+width:100%;
+text-align:center;
+
+animation:fadeUp 0.7s ease;
+}
+
+/* HERO CARD */
+
+.hero-card h1{
+font-size:36px;
+margin-bottom:10px;
+}
+
+.subtitle{
+color:#4caf50;
+margin-bottom:15px;
+font-weight:500;
+}
+
+.description{
+margin-bottom:30px;
+line-height:1.6;
+}
+
+/* FORMULARIO */
+
+.form-fields p{
+display:flex;
+flex-direction:column;
+text-align:left;
+margin-bottom:18px;
+}
+
+.form-fields label{
+margin-bottom:5px;
+font-weight:500;
+}
+
+.form-fields input,
+.form-fields select{
+padding:10px;
+border-radius:8px;
+border:1px solid #ddd;
+transition:0.2s;
+}
+
+.form-fields input:focus,
+.form-fields select:focus{
+border-color:#4caf50;
+outline:none;
+box-shadow:0 0 0 3px rgba(76,175,80,0.15);
+}
+
+/* BOTON */
+
+.btn-primary{
+display:inline-block;
+background:#2e7d32;
+color:white;
+padding:12px 30px;
+border-radius:10px;
+text-decoration:none;
+font-weight:600;
+border:none;
+cursor:pointer;
+
+transition:all 0.3s;
+}
+
+.btn-primary:hover{
+background:#1b5e20;
+transform:translateY(-2px);
+box-shadow:0 6px 15px rgba(0,0,0,0.2);
+}
+
+/* SUCCESS */
+
+.success-icon{
+font-size:50px;
+margin-bottom:10px;
+}
+
+.order-details{
+text-align:left;
+margin:25px 0;
+}
+
+.order-details p{
+margin:8px 0;
+}
+
+/* FOOTER */
+
+footer{
+background:#2e7d32;
+color:white;
+text-align:center;
+padding:18px;
+margin-top:40px;
+}
+
+/* ANIMACION */
+
+@keyframes fadeUp{
+
+from{
+opacity:0;
+transform:translateY(30px);
+}
+
+to{
+opacity:1;
+transform:translateY(0);
+}
+
 }

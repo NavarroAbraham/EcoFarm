@@ -3,13 +3,29 @@
 {% block title %}Pedido y Pago - EcoFarm{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>Crear pedido y pago</h1>
 
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Pagar</button>
-    </form>
+<div class="center-wrapper">
+
+<div class="card form-card">
+
+<h1>🛒 Crear pedido y pago</h1>
+
+<form method="post">
+
+{% csrf_token %}
+
+<div class="form-fields">
+{{ form.as_p }}
 </div>
+
+<button class="btn-primary" type="submit">
+Pagar
+</button>
+
+</form>
+
+</div>
+
+</div>
+
 {% endblock %}
