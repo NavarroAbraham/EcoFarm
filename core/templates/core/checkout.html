@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - EcoFarm{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="fw-bold mb-5">💳 Finalizar Compra</h1>
+
+    {% if error %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Error:</strong> {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Formulario de Checkout -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">👤 Datos de Facturación</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="customer_name" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" id="customer_name" name="customer_name" 
+                                   required placeholder="Tu nombre completo">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="customer_email" class="form-label">Correo Electrónico</label>
+                            <input type="email" class="form-control" id="customer_email" name="customer_email" 
+                                   required placeholder="tu@email.com">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="provider" class="form-label">Método de Pago</label>
+                            <select class="form-select" id="provider" name="provider" required>
+                                <option value="" disabled selected>Selecciona un método de pago</option>
+                                <option value="dummy">💳 DummyPay (Simulador)</option>
+                            </select>
+                            <small class="text-muted d-block mt-2">
+                                💡 Este es un simulador. El pago se procesará de forma segura.
+                            </small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                ✓ Confirmar y Pagar - ${{ cart_total }}
+                            </button>
+                            <a href="{% url 'core:view_cart' %}" class="btn btn-outline-secondary">
+                                ← Volver al Carrito
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen del Carrito -->
+        <div class="col-lg-4">
+            <div class="card bg-light sticky-top" style="top: 20px;">
+                <div class="card-header">
+                    <h5 class="mb-0">📦 Resumen de tu Pedido</h5>
+                </div>
+                <div class="card-body">
+                    <div class="order-summary" style="max-height: 300px; overflow-y: auto;">
+                        {% for item in cart_items %}
+                        <div class="mb-3 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between mb-1">
+                                <strong>{{ item.product.name }}</strong>
+                                <span class="badge bg-info">{{ item.quantity }}x</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">${{ item.product.price }} c/u</small>
+                                <strong>${{ item.subtotal }}</strong>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <strong>${{ cart_total }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Envío:</span>
+                            <strong class="text-success">Gratis</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Impuestos:</span>
+                            <strong>$0.00</strong>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold fs-5">Total a Pagar:</span>
+                        <span class="product-price fs-4">${{ cart_total }}</span>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="alert alert-info mt-4 mb-0" role="alert">
+                        <small>
+                            <strong>✓ Datos seguros:</strong><br>
+                            Tus datos están protegidos
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
