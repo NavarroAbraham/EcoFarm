@@ -3,96 +3,132 @@
 {% block title %}Tienda - EcoFarm{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row mb-4 align-items-center">
-        <div class="col">
-            <h1 class="fw-bold mb-0">🛒 Tienda de EcoFarm</h1>
+<section class="page-hero">
+    <div class="container">
+        <h1>Catálogo agrícola</h1>
+        <p class="breadcrumbs">Inicio / Categoría / Insumos profesionales</p>
+    </div>
+</section>
+
+<div class="container catalog-layout">
+    <aside aria-label="Filtros">
+        <details class="filter-drawer" open>
+            <summary>Filtros y categorías</summary>
+            <div class="filter-sidebar">
+                <div class="filter-header">
+                    <h2>Filtros</h2>
+                    <button class="btn btn-ghost" type="button">Limpiar</button>
+                </div>
+                <div class="filter-group">
+                    <h3>Categorías</h3>
+                {% if category_counts %}
+                    {% for item in category_counts %}
+                    <label class="filter-option">
+                        <input type="checkbox" name="category">
+                        <span>{{ item.category }}</span>
+                        <span class="filter-count">{{ item.total }}</span>
+                    </label>
+                    {% endfor %}
+                {% else %}
+                    <label class="filter-option">
+                        <input type="checkbox" name="category">
+                        <span>Insumos orgánicos</span>
+                        <span class="filter-count">12</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox" name="category">
+                        <span>Riego</span>
+                        <span class="filter-count">8</span>
+                    </label>
+                {% endif %}
+                </div>
+                <div class="filter-group">
+                    <h3>Precio</h3>
+                    <input type="range" min="10" max="500" value="120">
+                    <div class="range-values">
+                        <span>$10</span>
+                        <span>$500</span>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <h3>Disponibilidad</h3>
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <span>En stock</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <span>Entrega 24/48h</span>
+                    </label>
+                </div>
+                <div class="filter-group">
+                    <h3>Valoración</h3>
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <span>4 estrellas o más</span>
+                    </label>
+                    <label class="filter-option">
+                        <input type="checkbox">
+                        <span>3 estrellas o más</span>
+                    </label>
+                </div>
+            </div>
+        </details>
+    </aside>
+
+    <section>
+        <div class="product-toolbar">
+            <div>
+                <h2>Resultados destacados</h2>
+                <p class="section-subtitle">Productos seleccionados con mejor rotación.</p>
+            </div>
+            <select aria-label="Ordenar productos">
+                <option>Más relevantes</option>
+                <option>Precio: menor a mayor</option>
+                <option>Precio: mayor a menor</option>
+                <option>Novedades</option>
+            </select>
         </div>
-        <div class="col-auto">
-            {% if cart_count > 0 %}
-            <a href="{% url 'core:view_cart' %}" class="btn btn-info position-relative">
-                🛍️ Mi Carrito
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                    {{ cart_count }}
-                </span>
-            </a>
+
+        <div class="product-grid">
+            {% if products %}
+                {% for product in products %}
+                <article class="product-card">
+                    <div class="product-media">
+                        {% if product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                        {% else %}
+                        <span class="badge">Disponible</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <span class="badge">{{ product.category }}</span>
+                        <h3 class="product-title">{{ product.name }}</h3>
+                        <p class="product-desc">{{ product.description|truncatewords:18 }}</p>
+                        <div class="product-meta">
+                            <span class="price">${{ product.price }}</span>
+                            <span class="rating" aria-label="4.7 de 5">4.7/5</span>
+                        </div>
+                        <div class="product-actions">
+                            <form method="POST" action="{% url 'core:add_to_cart' product.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Agregar</button>
+                            </form>
+                            <a class="btn btn-outline" href="{% url 'core:product_detail' product.id %}">Ver detalles</a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            {% else %}
+            <p>No hay productos disponibles en este momento.</p>
             {% endif %}
         </div>
-    </div>
-    
-    {% if random_product %}
-    <div class="row">
-        <!-- Product Details -->
-        <div class="col-lg-6 mb-4">
-            <div class="card product-card h-100">
-                <div class="product-image" style="font-size: 8rem;">
-                    🥕
-                </div>
-                <div class="card-body">
-                    <span class="badge bg-success mb-2">{{ random_product.category }}</span>
-                    <h2 class="card-title fw-bold">{{ random_product.name }}</h2>
-                    <p class="card-text text-muted" style="font-size: 1.1rem;">{{ random_product.description }}</p>
-                    <p class="product-price mb-4">${{ random_product.price }}</p>
-                    
-                    <div class="mb-3">
-                        <small class="text-muted">Producto ID: #{{ random_product.id }}</small>
-                    </div>
-                </div>
-            </div>
+
+        <div class="pagination">
+            <button class="btn btn-ghost" type="button">Anterior</button>
+            <span>Página 1 de 8</span>
+            <button class="btn btn-outline" type="button">Siguiente</button>
         </div>
-
-        <!-- Add to Cart Form -->
-        <div class="col-lg-6">
-            <div class="order-form">
-                <h3 class="mb-4 fw-bold">Agregar al Carrito</h3>
-                
-                <form method="POST" action="{% url 'core:add_to_cart' random_product.id %}">
-                    {% csrf_token %}
-                    
-                    <div class="alert alert-info mb-4" role="alert">
-                        <h5 class="mb-2">📦 Producto Seleccionado</h5>
-                        <p class="mb-2">
-                            <strong>{{ random_product.name }}</strong><br>
-                            Precio: <span class="product-price">${{ random_product.price }}</span>
-                        </p>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
-                        ➕ Agregar al Carrito
-                    </button>
-                </form>
-
-                <!-- Links -->
-                <div class="d-grid gap-2">
-                    {% if cart_count > 0 %}
-                    <a href="{% url 'core:view_cart' %}" class="btn btn-outline-info btn-lg">
-                        🛍️ Ver Carrito ({{ cart_count }} items)
-                    </a>
-                    {% else %}
-                    <p class="text-muted text-center">Tu carrito está vacío</p>
-                    {% endif %}
-                </div>
-
-                <!-- Info Box -->
-                <div class="alert alert-warning mt-4" role="alert">
-                    <small>
-                        💡 <strong>Cómo funciona:</strong>
-                        <ol class="mb-0 ps-3">
-                            <li>Haz clic en "Agregar al Carrito"</li>
-                            <li>Se mostrará otro producto aleatorio</li>
-                            <li>Repite para agregar más productos</li>
-                            <li>El total se calcula automáticamente</li>
-                            <li>Ve a tu carrito para proceder al pago</li>
-                        </ol>
-                    </small>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <div class="alert alert-warning" role="alert">
-        No hay productos disponibles en este momento.
-    </div>
-    {% endif %}
+    </section>
 </div>
 {% endblock %}

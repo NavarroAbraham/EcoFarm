@@ -3,109 +3,190 @@
 {% block title %}Inicio - EcoFarm{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
 <section class="hero">
     <div class="container">
-        <h1>🌱 Bienvenido a EcoFarm</h1>
-        <p>Productos ecológicos frescos directamente a tu puerta</p>
-        <a href="{% url 'core:shop' %}" class="btn btn-light btn-lg" style="color: #28a745; font-weight: bold;">
-            Comprar Ahora
-        </a>
+        <div class="section-header">
+            <div>
+                <h1 class="section-title">Abastecimiento agrícola confiable para tiendas y productores</h1>
+                <p class="section-subtitle">Compra insumos, herramientas y bio-soluciones con entregas seguras y soporte técnico especializado.</p>
+            </div>
+            <div class="hero-actions">
+                <a href="{% url 'core:shop' %}" class="btn btn-primary">Explorar catálogo</a>
+                <a href="{% url 'core:order-create' %}" class="btn btn-outline">Cotizar pedido</a>
+            </div>
+        </div>
+
+        <div class="hero-carousel" aria-label="Promociones destacadas">
+            <article class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1487528278747-ba99ed528ebc?auto=format&fit=crop&w=1400&q=80');">
+                <div class="hero-content">
+                    <span class="hero-badge">Nueva temporada</span>
+                    <h2 class="hero-title">Semillas certificadas para cultivos de alto rendimiento</h2>
+                    <p>Variedades adaptadas a clima y suelo, con trazabilidad completa.</p>
+                    <a class="btn btn-primary" href="{% url 'core:shop' %}">Ver semillas</a>
+                </div>
+            </article>
+            <article class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=1400&q=80');">
+                <div class="hero-content">
+                    <span class="hero-badge">Oferta profesional</span>
+                    <h2 class="hero-title">Paquetes de riego inteligente con 20% OFF</h2>
+                    <p>Automatiza la irrigación con sensores de humedad y control móvil.</p>
+                    <a class="btn btn-outline" href="{% url 'core:shop' %}">Conocer más</a>
+                </div>
+            </article>
+            <article class="hero-slide" style="background-image: url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1400&q=80');">
+                <div class="hero-content">
+                    <span class="hero-badge">Producción sostenible</span>
+                    <h2 class="hero-title">Biofertilizantes y control natural</h2>
+                    <p>Protege tus cultivos con soluciones compatibles con certificaciones orgánicas.</p>
+                    <a class="btn btn-primary" href="{% url 'core:shop' %}">Ver bio-soluciones</a>
+                </div>
+            </article>
+        </div>
     </div>
 </section>
 
-<!-- Carrito Activo -->
-{% if cart_count > 0 %}
-<section class="py-3 bg-info text-white">
+{% if cart_count %}
+<section class="section">
     <div class="container">
-        <div class="row align-items-center">
-            <div class="col">
-                <h5 class="mb-0">🛍️ Tienes {{ cart_count }} producto(s) en tu carrito</h5>
-            </div>
-            <div class="col-auto">
-                <a href="{% url 'core:view_cart' %}" class="btn btn-light">
-                    Ver Carrito
-                </a>
+        <div class="cart-card">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Tu carrito está activo</h2>
+                    <p class="section-subtitle">Tienes {{ cart_count }} producto(s) pendientes de compra.</p>
+                </div>
+                <a href="{% url 'core:view_cart' %}" class="btn btn-outline">Ver carrito</a>
             </div>
         </div>
     </div>
 </section>
 {% endif %}
 
-<!-- Stats Section -->
-<section class="py-5">
+<section class="section">
     <div class="container">
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="stat-number">{{ total_orders }}</div>
-                    <div class="stat-label">Órdenes Completadas</div>
-                </div>
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Categorías principales</h2>
+                <p class="section-subtitle">Encuentra rápidamente lo que necesitas para cada etapa del cultivo.</p>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="stat-number">{{ paid_orders }}</div>
-                    <div class="stat-label">Pagadas Exitosamente</div>
-                </div>
+        </div>
+        <div class="category-grid">
+            <div class="category-card">
+                <div class="category-icon">S</div>
+                <h3>Semillas</h3>
+                <p class="section-subtitle">Certificadas y adaptadas</p>
             </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="stat-number">${{ total_revenue }}</div>
-                    <div class="stat-label">Ingresos Totales</div>
-                </div>
+            <div class="category-card">
+                <div class="category-icon">R</div>
+                <h3>Riego</h3>
+                <p class="section-subtitle">Goteo y automatización</p>
+            </div>
+            <div class="category-card">
+                <div class="category-icon">F</div>
+                <h3>Fertilizantes</h3>
+                <p class="section-subtitle">Nutrición balanceada</p>
+            </div>
+            <div class="category-card">
+                <div class="category-icon">H</div>
+                <h3>Herramientas</h3>
+                <p class="section-subtitle">Equipos duraderos</p>
+            </div>
+            <div class="category-card">
+                <div class="category-icon">B</div>
+                <h3>Bio-control</h3>
+                <p class="section-subtitle">Soluciones naturales</p>
+            </div>
+            <div class="category-card">
+                <div class="category-icon">A</div>
+                <h3>Agroindustria</h3>
+                <p class="section-subtitle">Procesos y empaques</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Featured Products -->
-<section class="py-5 bg-light">
+<section class="section">
     <div class="container">
-        <h2 class="text-center mb-5 fw-bold">Nuestros Productos Destacados</h2>
-        <div class="row g-4">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Productos destacados</h2>
+                <p class="section-subtitle">Selección curada con mejor disponibilidad y soporte técnico.</p>
+            </div>
+            <a href="{% url 'core:shop' %}" class="btn btn-outline">Ver todo</a>
+        </div>
+        <div class="product-grid">
             {% if featured_products %}
                 {% for product in featured_products %}
-                <div class="col-md-4">
-                    <div class="card product-card h-100">
-                        <div class="product-image bg-light d-flex align-items-center justify-content-center">
-                            📦
+                <article class="product-card">
+                    <div class="product-media">
+                        {% if product.image_url %}
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                        {% else %}
+                        <span class="badge">Top ventas</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <span class="badge">{{ product.category }}</span>
+                        <h3 class="product-title">{{ product.name }}</h3>
+                        <p class="product-desc">{{ product.description|truncatewords:18 }}</p>
+                        <div class="product-meta">
+                            <span class="price">${{ product.price }}</span>
+                            <span class="rating" aria-label="4.8 de 5">4.8/5</span>
                         </div>
-                        <div class="card-body">
-                            <h5 class="card-title">{{ product.name }}</h5>
-                            <p class="card-text text-muted">{{ product.description|truncatewords:15 }}</p>
-                            <p class="product-price">${{ product.price }}</p>
-                            <a href="{% url 'core:shop' %}" class="btn btn-primary w-100">Ver en Tienda</a>
+                        <div class="product-actions">
+                            <form method="POST" action="{% url 'core:add_to_cart' product.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Agregar</button>
+                            </form>
+                            <a href="{% url 'core:product_detail' product.id %}" class="btn btn-outline">Ver detalles</a>
                         </div>
                     </div>
-                </div>
+                </article>
                 {% endfor %}
+            {% else %}
+            <p>No hay productos disponibles por ahora.</p>
             {% endif %}
         </div>
     </div>
 </section>
-{% endblock %}
 
-<div class="center-wrapper">
-
-<div class="card hero-card">
-
-<h1>🌱 Bienvenido a EcoFarm</h1>
-
-<p class="subtitle">
-Tu plataforma de agricultura ecológica
-</p>
-
-<p class="description">
-Conecta con productos frescos cultivados de forma responsable
-y apoya a los agricultores locales mientras cuidas el planeta.
-</p>
-
-<a class="btn-primary" href="{% url 'core:order-create' %}">
-Crear pedido y pago
-</a>
-
-</div>
-
-</div>
-
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Indicadores de confianza</h2>
+                <p class="section-subtitle">Transparencia y control en cada operación.</p>
+            </div>
+        </div>
+        <div class="product-grid">
+            <div class="product-card">
+                <div class="product-info">
+                    <span class="badge">Operaciones</span>
+                    <h3 class="product-title">{{ total_orders }}</h3>
+                    <p class="product-desc">Órdenes gestionadas por nuestra red de proveedores.</p>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-info">
+                    <span class="badge">Pagos</span>
+                    <h3 class="product-title">{{ paid_orders }}</h3>
+                    <p class="product-desc">Pagos procesados con confirmación segura.</p>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-info">
+                    <span class="badge">Ingresos</span>
+                    <h3 class="product-title">${{ total_revenue }}</h3>
+                    <p class="product-desc">Volumen transaccionado por la comunidad EcoFarm.</p>
+                </div>
+            </div>
+            <div class="product-card">
+                <div class="product-info">
+                    <span class="badge">Soporte</span>
+                    <h3 class="product-title">24/6</h3>
+                    <p class="product-desc">Asesoría técnica y logística para tus pedidos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
