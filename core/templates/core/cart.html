@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Carrito - EcoFarm{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="fw-bold">🛍️ Mi Carrito</h1>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'core:shop' %}" class="btn btn-outline-secondary">
+                ← Seguir Comprando
+            </a>
+        </div>
+    </div>
+
+    {% if cart_items %}
+    <div class="row">
+        <!-- Carrito Items -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Productos en tu Carrito ({{ cart_count }} items)</h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th style="width: 80px;">Cantidad</th>
+                                    <th style="width: 100px;">Precio</th>
+                                    <th style="width: 120px;">Subtotal</th>
+                                    <th style="width: 60px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in cart_items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.product.name }}</strong><br>
+                                        <small class="text-muted">{{ item.product.category }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ item.quantity }}</span>
+                                    </td>
+                                    <td>
+                                        <strong>${{ item.product.price }}</strong>
+                                    </td>
+                                    <td>
+                                        <strong class="product-price">${{ item.subtotal }}</strong>
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="{% url 'core:remove_from_cart' item.product.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                ✕
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen -->
+        <div class="col-lg-4">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">📋 Resumen del Carrito</h5>
+                    
+                    <div class="d-flex justify-content-between mb-3">
+                        <span>Productos:</span>
+                        <strong>{{ cart_count }}</strong>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="fw-bold fs-5">Total:</span>
+                        <span class="product-price fs-4">${{ cart_total }}</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'core:checkout' %}" class="btn btn-primary btn-lg">
+                            💳 Proceder al Pago
+                        </a>
+                        <a href="{% url 'core:shop' %}" class="btn btn-outline-secondary">
+                            Seguir Comprando
+                        </a>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="alert alert-info mt-4 mb-0" role="alert">
+                        <small>
+                            ✓ El total se calcula automáticamente<br>
+                            ✓ Puedes eliminar productos con el botón ✕<br>
+                            ✓ El envío es gratuito para todos los pedidos
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <h5>🛒 Tu carrito está vacío</h5>
+        <p>Aún no has agregado ningún producto.</p>
+        <a href="{% url 'core:shop' %}" class="btn btn-primary">
+            Ir a la Tienda
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

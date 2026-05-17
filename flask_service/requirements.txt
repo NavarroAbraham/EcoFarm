@@ -1,0 +1,7 @@
+Flask
+Flask-SQLAlchemy
+Flask-Marshmallow
+marshmallow
+marshmallow-sqlalchemy
+reportlab
+Pillow

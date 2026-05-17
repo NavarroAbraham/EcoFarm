@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Tienda - EcoFarm{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h1 class="fw-bold mb-0">🛒 Tienda de EcoFarm</h1>
+        </div>
+        <div class="col-auto">
+            {% if cart_count > 0 %}
+            <a href="{% url 'core:view_cart' %}" class="btn btn-info position-relative">
+                🛍️ Mi Carrito
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    {{ cart_count }}
+                </span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if random_product %}
+    <div class="row">
+        <!-- Product Details -->
+        <div class="col-lg-6 mb-4">
+            <div class="card product-card h-100">
+                <div class="product-image" style="font-size: 8rem;">
+                    🥕
+                </div>
+                <div class="card-body">
+                    <span class="badge bg-success mb-2">{{ random_product.category }}</span>
+                    <h2 class="card-title fw-bold">{{ random_product.name }}</h2>
+                    <p class="card-text text-muted" style="font-size: 1.1rem;">{{ random_product.description }}</p>
+                    <p class="product-price mb-4">${{ random_product.price }}</p>
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">Producto ID: #{{ random_product.id }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add to Cart Form -->
+        <div class="col-lg-6">
+            <div class="order-form">
+                <h3 class="mb-4 fw-bold">Agregar al Carrito</h3>
+                
+                <form method="POST" action="{% url 'core:add_to_cart' random_product.id %}">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-info mb-4" role="alert">
+                        <h5 class="mb-2">📦 Producto Seleccionado</h5>
+                        <p class="mb-2">
+                            <strong>{{ random_product.name }}</strong><br>
+                            Precio: <span class="product-price">${{ random_product.price }}</span>
+                        </p>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                        ➕ Agregar al Carrito
+                    </button>
+                </form>
+
+                <!-- Links -->
+                <div class="d-grid gap-2">
+                    {% if cart_count > 0 %}
+                    <a href="{% url 'core:view_cart' %}" class="btn btn-outline-info btn-lg">
+                        🛍️ Ver Carrito ({{ cart_count }} items)
+                    </a>
+                    {% else %}
+                    <p class="text-muted text-center">Tu carrito está vacío</p>
+                    {% endif %}
+                </div>
+
+                <!-- Info Box -->
+                <div class="alert alert-warning mt-4" role="alert">
+                    <small>
+                        💡 <strong>Cómo funciona:</strong>
+                        <ol class="mb-0 ps-3">
+                            <li>Haz clic en "Agregar al Carrito"</li>
+                            <li>Se mostrará otro producto aleatorio</li>
+                            <li>Repite para agregar más productos</li>
+                            <li>El total se calcula automáticamente</li>
+                            <li>Ve a tu carrito para proceder al pago</li>
+                        </ol>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning" role="alert">
+        No hay productos disponibles en este momento.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

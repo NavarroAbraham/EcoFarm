@@ -1,6 +1,20 @@
 from rest_framework import serializers
 
-from .models import Order, Payment
+from .models import Order, Payment, Product
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = [
+            'id',
+            'name',
+            'description',
+            'price',
+            'category',
+            'created_at',
+        ]
+        read_only_fields = fields
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -19,6 +33,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     payments = PaymentSerializer(many=True, read_only=True)
+    product = ProductSerializer(read_only=True)
 
     class Meta:
         model = Order
@@ -28,6 +43,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'customer_email',
             'total_amount',
             'status',
+            'product',
             'created_at',
             'payments',
         ]
