@@ -3,47 +3,51 @@
 {% block title %}Pago exitoso - EcoFarm{% endblock %}
 
 {% block content %}
+<section class="page-hero">
+    <div class="container">
+        <h1>Pago completado</h1>
+        <p class="breadcrumbs">Inicio / Pago / Confirmación</p>
+    </div>
+</section>
 
-<div class="center-wrapper">
-
-<div class="card success-card">
-
-<div class="success-icon">✅</div>
-
-<h1>Pago completado</h1>
-
-<p class="subtitle">
-Tu pedido fue procesado correctamente
-</p>
-
-<div class="order-details">
-
-<p><strong>Pedido:</strong> #{{ order.id }}</p>
-
-<p><strong>Cliente:</strong>
-{{ order.customer_name }} ({{ order.customer_email }})
-</p>
-
-<p><strong>Monto:</strong>
-${{ order.total_amount }}
-</p>
-
-<p><strong>Proveedor:</strong>
-{{ payment.provider }}
-</p>
-
-<p><strong>Referencia:</strong>
-{{ payment.external_id }}
-</p>
-
+<div class="container section">
+    <div class="form-card">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Tu pedido fue procesado correctamente</h2>
+                <p class="section-subtitle">Hemos enviado la confirmación a tu correo.</p>
+            </div>
+        </div>
+        <div class="cart-summary">
+            <div class="product-meta">
+                <span>Pedido</span>
+                <strong>#{{ order.id }}</strong>
+            </div>
+            <div class="product-meta">
+                <span>Cliente</span>
+                <strong>{{ order.customer_name }}</strong>
+            </div>
+            <div class="product-meta">
+                <span>Correo</span>
+                <strong>{{ order.customer_email }}</strong>
+            </div>
+            <div class="product-meta">
+                <span>Monto</span>
+                <strong class="price">${{ order.total_amount }}</strong>
+            </div>
+            <div class="product-meta">
+                <span>Proveedor</span>
+                <strong>{{ payment.provider }}</strong>
+            </div>
+            <div class="product-meta">
+                <span>Referencia</span>
+                <strong>{{ payment.external_id }}</strong>
+            </div>
+        </div>
+        <div class="hero-actions">
+            <a href="{% url 'core:home' %}" class="btn btn-primary">Volver al inicio</a>
+            <a href="{% url 'core:shop' %}" class="btn btn-outline">Explorar catálogo</a>
+        </div>
+    </div>
 </div>
-
-<a href="/" class="btn-primary">
-Volver al inicio
-</a>
-
-</div>
-
-</div>
-
 {% endblock %}

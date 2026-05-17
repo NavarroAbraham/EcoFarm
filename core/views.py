@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
-from django.db.models import Q, Sum, Count
+from django.db.models import Sum, Count
 from django.urls import reverse
 
 from rest_framework.views import APIView
@@ -18,7 +18,6 @@ from .serializers import (
 )
 from .models import Order, Product
 from decimal import Decimal
-import random
 
 
 def _get_cart_from_session(request):
@@ -26,6 +25,10 @@ def _get_cart_from_session(request):
     if 'cart' not in request.session:
         request.session['cart'] = {}
     return request.session['cart']
+
+def _get_cart_count(request):
+    cart = _get_cart_from_session(request)
+    return sum(cart.values())
 
 
 def _calculate_cart_total(cart):
@@ -58,8 +61,6 @@ def _get_cart_items(cart):
 
 def home(request):
     """Vista principal del sitio - Dashboard"""
-    from django.db.models import Q
-    
     # Estadísticas
     total_orders = Order.objects.count()
     paid_orders = Order.objects.filter(status=Order.STATUS_PAID).count()
@@ -73,8 +74,7 @@ def home(request):
     featured_products = Product.objects.all()[:3]
     
     # Carrito
-    cart = _get_cart_from_session(request)
-    cart_count = sum(cart.values())
+    cart_count = _get_cart_count(request)
     
     context = {
         'total_orders': total_orders,
@@ -87,39 +87,53 @@ def home(request):
 
 
 def shop(request):
-    """Vista de tienda - Muestra un producto aleatorio"""
-    import random
-    
-    # Obtener un producto aleatorio
+    """Vista de tienda - Catálogo de productos"""
     products = Product.objects.all()
-    if not products.exists():
-        random_product = None
-    else:
-        random_product = random.choice(products)
-    
-    # Carrito
-    cart = _get_cart_from_session(request)
-    cart_count = sum(cart.values())
-    
+    category_counts = (
+        Product.objects.values('category')
+        .annotate(total=Count('id'))
+        .order_by('category')
+    )
+
     context = {
-        'random_product': random_product,
-        'cart_count': cart_count,
+        'products': products,
+        'category_counts': category_counts,
+        'cart_count': _get_cart_count(request),
     }
     return render(request, 'core/shop.html', context)
 
 
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:4]
+
+    context = {
+        'product': product,
+        'related_products': related_products,
+        'cart_count': _get_cart_count(request),
+    }
+    return render(request, 'core/product_detail.html', context)
+
+
 def add_to_cart(request, product_id):
-    """Agrega un producto al carrito y muestra otro producto aleatorio"""
+    """Agrega un producto al carrito y vuelve a la tienda"""
     if request.method == 'POST':
         product = get_object_or_404(Product, id=product_id)
         cart = _get_cart_from_session(request)
-        
-        # Agregar al carrito
+
+        quantity_raw = request.POST.get('quantity', '1')
+        try:
+            quantity = int(quantity_raw)
+        except (TypeError, ValueError):
+            quantity = 1
+        if quantity < 1:
+            quantity = 1
+
         product_key = str(product.id)
         if product_key in cart:
-            cart[product_key] += 1
+            cart[product_key] += quantity
         else:
-            cart[product_key] = 1
+            cart[product_key] = quantity
         
         request.session['cart'] = cart
         request.session.modified = True
@@ -182,6 +196,7 @@ def checkout_view(request):
             context = {
                 'cart_items': cart_items,
                 'cart_total': f"{total_amount:.2f}",
+                'cart_count': _get_cart_count(request),
                 'error': 'Por favor completa todos los campos'
             }
             return render(request, 'core/checkout.html', context)
@@ -204,6 +219,7 @@ def checkout_view(request):
             context = {
                 'order': order,
                 'payment': payment,
+                'cart_count': _get_cart_count(request),
             }
             return render(request, 'core/order_payment_success.html', context)
             
@@ -211,6 +227,7 @@ def checkout_view(request):
             context = {
                 'cart_items': cart_items,
                 'cart_total': f"{total_amount:.2f}",
+                'cart_count': _get_cart_count(request),
                 'error': str(exc)
             }
             return render(request, 'core/checkout.html', context)
@@ -218,6 +235,7 @@ def checkout_view(request):
             context = {
                 'cart_items': cart_items,
                 'cart_total': f"{total_amount:.2f}",
+                'cart_count': _get_cart_count(request),
                 'error': 'Error en validación de datos'
             }
             return render(request, 'core/checkout.html', context)
@@ -236,18 +254,19 @@ class OrderPaymentCreateView(View):
 
     def get(self, request):
         form = OrderPaymentForm()
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {'form': form, 'cart_count': _get_cart_count(request)})
 
     def post(self, request):
         form = OrderPaymentForm(request.POST)
         if not form.is_valid():
-            return render(request, self.template_name, {'form': form})
+            return render(request, self.template_name, {'form': form, 'cart_count': _get_cart_count(request)})
 
         service = OrderPaymentService()
         order, payment = service.create_order_and_payment(form.cleaned_data)
         context = {
             'order': order,
             'payment': payment,
+            'cart_count': _get_cart_count(request),
         }
         return render(request, self.success_template_name, context)
 

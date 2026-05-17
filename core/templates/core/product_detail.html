@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - EcoFarm{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container">
+        <h1>{{ product.name }}</h1>
+        <p class="breadcrumbs">Inicio / Catalogo / {{ product.category }}</p>
+    </div>
+</section>
+
+<div class="container product-detail">
+    <div>
+        <div class="gallery-main">
+            {% if product.image_url %}
+            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+            {% else %}
+            <div class="product-media" aria-hidden="true"></div>
+            {% endif %}
+        </div>
+        <div class="gallery-thumbs">
+            <div class="gallery-thumb">
+                {% if product.image_url %}
+                <img src="{{ product.image_url }}" alt="Vista 1 de {{ product.name }}">
+                {% else %}
+                <div class="product-media" aria-hidden="true"></div>
+                {% endif %}
+            </div>
+            <div class="gallery-thumb">
+                <div class="product-media" aria-hidden="true"></div>
+            </div>
+            <div class="gallery-thumb">
+                <div class="product-media" aria-hidden="true"></div>
+            </div>
+            <div class="gallery-thumb">
+                <div class="product-media" aria-hidden="true"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="product-info-panel">
+        <span class="badge">{{ product.category }}</span>
+        <h2 class="section-title">{{ product.name }}</h2>
+        <p class="section-subtitle">{{ product.description }}</p>
+        <div class="product-meta">
+            <span class="price">${{ product.price }}</span>
+            <span class="rating" aria-label="4.9 de 5">4.9/5</span>
+        </div>
+        <span class="stock">En stock</span>
+
+        <form method="POST" action="{% url 'core:add_to_cart' product.id %}">
+            {% csrf_token %}
+            <div class="quantity-selector">
+                <label for="quantity">Cantidad</label>
+                <input id="quantity" type="number" name="quantity" min="1" value="1">
+            </div>
+            <div class="hero-actions">
+                <button type="submit" class="btn btn-primary">Agregar al carrito</button>
+                <a href="{% url 'core:view_cart' %}" class="btn btn-outline">Ver carrito</a>
+            </div>
+        </form>
+
+        <div class="tabs">
+            <input type="radio" id="tab-specs" name="product-tabs" checked>
+            <label for="tab-specs">Ficha tecnica</label>
+            <input type="radio" id="tab-reviews" name="product-tabs">
+            <label for="tab-reviews">Resenas</label>
+            <div class="tab-panels">
+                <div class="tab-panel panel-specs">
+                    <ul>
+                        <li>Presentacion: 1 kg / 5 kg / 25 kg</li>
+                        <li>Compatibilidad: suelos agricolas y horticultura intensiva</li>
+                        <li>Recomendacion: aplicacion cada 15 dias</li>
+                        <li>Certificacion: organico bajo norma local</li>
+                    </ul>
+                </div>
+                <div class="tab-panel panel-reviews">
+                    <p>5/5 "Mejoro el rendimiento en un 18% en la ultima temporada."</p>
+                    <p>4/5 "Entrega rapida y soporte tecnico claro."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if related_products %}
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Productos relacionados</h2>
+                <p class="section-subtitle">Mas opciones en {{ product.category }}.</p>
+            </div>
+        </div>
+        <div class="product-grid">
+            {% for item in related_products %}
+            <article class="product-card">
+                <div class="product-media">
+                    {% if item.image_url %}
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                    {% else %}
+                    <span class="badge">Disponible</span>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <span class="badge">{{ item.category }}</span>
+                    <h3 class="product-title">{{ item.name }}</h3>
+                    <div class="product-meta">
+                        <span class="price">${{ item.price }}</span>
+                        <span class="rating" aria-label="4.6 de 5">4.6/5</span>
+                    </div>
+                    <div class="product-actions">
+                        <a href="{% url 'core:product_detail' item.id %}" class="btn btn-outline">Ver detalles</a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
