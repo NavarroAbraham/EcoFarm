@@ -1,27 +1,23 @@
-from .builders import OrderBuilder
-from .factories import PaymentProcessorFactory
+from core.application.dtos import CreateOrderRequest
+from core.infrastructure.wiring import build_get_order_use_case, build_order_payment_facade
 
 
 class OrderPaymentService:
-    def __init__(self, builder=None, factory=None):
-        self.builder = builder or OrderBuilder()
-        self.factory = factory or PaymentProcessorFactory()
+    def __init__(self, facade=None):
+        self.facade = facade or build_order_payment_facade()
 
     def create_order_and_payment(self, data):
-        """Main business flow: build the order and process a payment.
-
-        Any business-related validation is done in the builder or the models.
-        The factory selects a suitable payment processor implementation.
-        """
-        order = self.builder.build(data)
-        processor = self.factory.get_processor(data['provider'])
-        payment = processor.charge(order, data['provider'])
-        return order, payment
+        request = CreateOrderRequest(
+            customer_name=data['customer_name'],
+            customer_email=data['customer_email'],
+            total_amount=data['total_amount'],
+            provider=data['provider'],
+            product_id=data.get('product_id'),
+            user_id=data.get('user_id'),
+        )
+        result = self.facade.create_order_and_payment(request)
+        return result.order, result.payment
 
     def get_order(self, pk):
-        from .models import Order
-
-        try:
-            return Order.objects.get(pk=pk)
-        except Order.DoesNotExist:
-            raise ValueError(f"Order with id {pk} not found")
+        use_case = build_get_order_use_case()
+        return use_case.execute(pk)

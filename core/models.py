@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -32,6 +33,13 @@ class Order(models.Model):
 	total_amount = models.DecimalField(max_digits=10, decimal_places=2)
 	status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
 	product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+	user = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name='orders',
+	)
 	created_at = models.DateTimeField(auto_now_add=True)
 
 	def __str__(self):
@@ -89,3 +97,24 @@ class Payment(models.Model):
 	def mark_failed(self):
 		self.status = self.STATUS_FAILED
 		self.save(update_fields=['status'])
+
+
+class Certificate(models.Model):
+	order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='certificate', null=True, blank=True)
+	user = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name='certificates',
+	)
+	course_name = models.CharField(max_length=200)
+	certificate_number = models.CharField(max_length=50, blank=True)
+	external_certificate_id = models.CharField(max_length=120, blank=True)
+	external_download_url = models.URLField(blank=True)
+	issued_date = models.DateTimeField(null=True, blank=True)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		label = self.certificate_number or f"Cert {self.pk}"
+		return f"{label} - {self.course_name}"

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Historial de órdenes - EcoFarm{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container">
+        <h1>Historial de órdenes</h1>
+        <p class="breadcrumbs">Inicio / Mi cuenta / Órdenes</p>
+    </div>
+</section>
+
+<div class="container section">
+    {% if orders %}
+    <div class="table-card">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Monto</th>
+                    <th>Estado</th>
+                    <th>Pago</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>${{ order.total_amount }}</td>
+                    <td>{{ order.status }}</td>
+                    <td>{{ order.payment_status|default:'Sin pago' }}</td>
+                    <td><a class="btn btn-outline btn-sm" href="{% url 'core:order-detail' order.id %}">Detalle</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="section-subtitle">Aún no tienes órdenes registradas.</p>
+    {% endif %}
+    <div class="hero-actions">
+        <a class="btn btn-outline" href="{% url 'core:account' %}">Volver a mi cuenta</a>
+    </div>
+</div>
+{% endblock %}

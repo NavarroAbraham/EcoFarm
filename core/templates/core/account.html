@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi cuenta - EcoFarm{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container">
+        <h1>Mi cuenta</h1>
+        <p class="breadcrumbs">Inicio / Mi cuenta</p>
+    </div>
+</section>
+
+<div class="container section">
+    <div class="form-card">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Perfil</h2>
+                <p class="section-subtitle">Tus datos básicos y actividad reciente.</p>
+            </div>
+        </div>
+        <div class="cart-summary">
+            <div class="product-meta">
+                <span>Usuario</span>
+                <strong>{{ user.username }}</strong>
+            </div>
+            <div class="product-meta">
+                <span>Correo</span>
+                <strong>{{ user.email|default:'Sin correo' }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Órdenes recientes</h2>
+                <p class="section-subtitle">Consulta el estado de tus compras.</p>
+            </div>
+            <a class="btn btn-outline" href="{% url 'core:order-history' %}">Ver historial</a>
+        </div>
+        {% if orders %}
+        <div class="table-card">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                        <th>Pago</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>${{ order.total_amount }}</td>
+                        <td>{{ order.status }}</td>
+                        <td>{{ order.payment_status|default:'Sin pago' }}</td>
+                        <td><a class="btn btn-outline btn-sm" href="{% url 'core:order-detail' order.id %}">Detalle</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="section-subtitle">Aún no tienes órdenes registradas.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Certificados</h2>
+                <p class="section-subtitle">Archivos emitidos para tus compras.</p>
+            </div>
+        </div>
+        {% if certificates %}
+        <div class="table-card">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Curso</th>
+                        <th>Certificado</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for certificate in certificates %}
+                    <tr>
+                        <td>#{{ certificate.id }}</td>
+                        <td>{{ certificate.course_name }}</td>
+                        <td>{{ certificate.certificate_number|default:'Pendiente' }}</td>
+                        <td><a class="btn btn-outline btn-sm" href="{% url 'core:certificate-detail' certificate.id %}">Ver</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="section-subtitle">Aún no tienes certificados emitidos.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

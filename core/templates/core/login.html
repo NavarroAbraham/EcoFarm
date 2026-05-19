@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Ingresar - EcoFarm{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container">
+        <h1>Ingresar</h1>
+        <p class="breadcrumbs">Inicio / Cuenta / Ingresar</p>
+    </div>
+</section>
+
+<div class="container section">
+    <div class="form-card">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Accede a tu cuenta</h2>
+                <p class="section-subtitle">Consulta tus órdenes y certificados.</p>
+            </div>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="form-row">
+                <div>
+                    <label for="{{ form.username.id_for_label }}">Usuario</label>
+                    {{ form.username }}
+                </div>
+                <div>
+                    <label for="{{ form.password.id_for_label }}">Contraseña</label>
+                    {{ form.password }}
+                </div>
+            </div>
+            <div class="hero-actions">
+                <button type="submit" class="btn btn-primary">Ingresar</button>
+                <a class="btn btn-outline" href="{% url 'core:register' %}">Crear cuenta</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
