@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear cuenta - EcoFarm{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container">
+        <h1>Crear cuenta</h1>
+        <p class="breadcrumbs">Inicio / Cuenta / Registro</p>
+    </div>
+</section>
+
+<div class="container section">
+    <div class="form-card">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Regístrate</h2>
+                <p class="section-subtitle">Crea tu cuenta para administrar tus pedidos.</p>
+            </div>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="form-row">
+                <div>
+                    <label for="{{ form.username.id_for_label }}">Usuario</label>
+                    {{ form.username }}
+                </div>
+                <div>
+                    <label for="{{ form.email.id_for_label }}">Correo</label>
+                    {{ form.email }}
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
+                    <label for="{{ form.password1.id_for_label }}">Contraseña</label>
+                    {{ form.password1 }}
+                </div>
+                <div>
+                    <label for="{{ form.role.id_for_label }}">Tipo de cuenta</label>
+                    {{ form.role }}
+                </div>
+            </div>
+            <div>
+                <label for="{{ form.password2.id_for_label }}">Confirmar contraseña</label>
+                {{ form.password2 }}
+            </div>
+            <div class="hero-actions">
+                <button type="submit" class="btn btn-primary">Crear cuenta</button>
+                <a class="btn btn-outline" href="{% url 'core:login' %}">Ya tengo cuenta</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

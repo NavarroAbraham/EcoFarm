@@ -153,39 +153,20 @@
     <div class="container">
         <div class="section-header">
             <div>
-                <h2 class="section-title">Indicadores de confianza</h2>
-                <p class="section-subtitle">Transparencia y control en cada operación.</p>
+                <h2 class="section-title">{{ indicator_title }}</h2>
+                <p class="section-subtitle">{{ indicator_subtitle }}</p>
             </div>
         </div>
         <div class="product-grid">
+            {% for card in indicator_cards %}
             <div class="product-card">
                 <div class="product-info">
-                    <span class="badge">Operaciones</span>
-                    <h3 class="product-title">{{ total_orders }}</h3>
-                    <p class="product-desc">Órdenes gestionadas por nuestra red de proveedores.</p>
+                    <span class="badge">{{ card.badge }}</span>
+                    <h3 class="product-title">{{ card.value }}</h3>
+                    <p class="product-desc">{{ card.description }}</p>
                 </div>
             </div>
-            <div class="product-card">
-                <div class="product-info">
-                    <span class="badge">Pagos</span>
-                    <h3 class="product-title">{{ paid_orders }}</h3>
-                    <p class="product-desc">Pagos procesados con confirmación segura.</p>
-                </div>
-            </div>
-            <div class="product-card">
-                <div class="product-info">
-                    <span class="badge">Ingresos</span>
-                    <h3 class="product-title">${{ total_revenue }}</h3>
-                    <p class="product-desc">Volumen transaccionado por la comunidad EcoFarm.</p>
-                </div>
-            </div>
-            <div class="product-card">
-                <div class="product-info">
-                    <span class="badge">Soporte</span>
-                    <h3 class="product-title">24/6</h3>
-                    <p class="product-desc">Asesoría técnica y logística para tus pedidos.</p>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </section>

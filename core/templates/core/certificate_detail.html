@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Certificado - EcoFarm{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container">
+        <h1>Certificado</h1>
+        <p class="breadcrumbs">Inicio / Mi cuenta / Certificado #{{ certificate.id }}</p>
+    </div>
+</section>
+
+<div class="container section">
+    <div class="form-card">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">{{ certificate.course_name }}</h2>
+                <p class="section-subtitle">Certificado {{ certificate.certificate_number|default:'Pendiente' }}</p>
+            </div>
+        </div>
+        <div class="cart-summary">
+            <div class="product-meta">
+                <span>Cliente</span>
+                <strong>{{ certificate.customer_name }}</strong>
+            </div>
+            <div class="product-meta">
+                <span>Correo</span>
+                <strong>{{ certificate.customer_email }}</strong>
+            </div>
+            <div class="product-meta">
+                <span>Emitido</span>
+                <strong>{{ certificate.issued_date|default:'Pendiente' }}</strong>
+            </div>
+        </div>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="{% url 'core:certificate-download' certificate.id %}">Descargar PDF</a>
+            <a class="btn btn-outline" href="{% url 'core:account' %}">Volver a mi cuenta</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

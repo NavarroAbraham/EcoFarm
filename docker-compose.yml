@@ -6,6 +6,8 @@ services:
     volumes:
       - .:/app
     command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      - FLASK_CERTIFICATE_URL=http://nginx/
 
   flask:
     build: ./flask_service
@@ -14,7 +16,7 @@ services:
     volumes:
       - ./db.sqlite3:/app/db.sqlite3
     environment:
-      - FLASK_ENV=development
+      - FLASK_DEBUG=0
 
   nginx:
     image: nginx:alpine
@@ -25,3 +27,9 @@ services:
     depends_on:
       - django
       - flask
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost/api/v2/health/ > /dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

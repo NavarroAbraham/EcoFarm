@@ -8,9 +8,11 @@ import re
 from datetime import datetime
 
 app = Flask(__name__)
+app.url_map.strict_slashes = False
 
 # Database configuration - using the same SQLite database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
+db_url = os.getenv('FLASK_DATABASE_URL') or os.getenv('DATABASE_URL') or 'sqlite:///db.sqlite3'
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -365,9 +367,21 @@ def get_order(order_id):
             'code': 'NOT_FOUND'
         }), 404
 
+@app.route('/', methods=['GET'])
+@app.route('/api/v2/', methods=['GET'])
+@app.route('/api/v2/health/', methods=['GET'])
 @app.route('/health/', methods=['GET'])
 def health_check():
-    return jsonify({'status': 'healthy'}), 200
+    return jsonify({
+        'status': 'healthy',
+        'service': 'flask_service',
+        'endpoints': [
+            '/health/',
+            '/api/v2/',
+            '/api/v2/orders/',
+            '/api/v2/certificates/'
+        ]
+    }), 200
 
 # Certificate API Routes
 @app.route('/api/v2/certificates/', methods=['POST'])
@@ -462,4 +476,5 @@ def download_certificate(certificate_id):
         }), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    debug_enabled = os.getenv('FLASK_DEBUG', '').lower() in ('1', 'true', 'yes', 'on')
+    app.run(host='0.0.0.0', port=5000, debug=debug_enabled)

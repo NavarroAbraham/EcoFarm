@@ -1,23 +1,27 @@
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
-from django.db.models import Sum, Count
-from django.urls import reverse
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-
-from django.core.exceptions import ValidationError
-
-from .forms import OrderPaymentForm
-from .services import OrderPaymentService
-from .serializers import (
-    OrderPaymentInputSerializer,
-    OrderSerializer,
-    PaymentSerializer,
+from django.db.models import Count
+from core.application.dtos import CertificateCreateRequest
+from core.application.errors import ApplicationError
+from core.infrastructure.wiring import (
+    build_certificate_provider,
+    build_create_certificate_use_case,
+    build_get_certificate_use_case,
+    build_get_certificate_by_order_use_case,
+    build_get_order_detail_use_case,
+    build_list_user_certificates_use_case,
+    build_list_user_orders_use_case,
 )
+
+from .account_services import build_indicator_context, build_provider_account_summary
+from .forms import OrderPaymentForm, UserRegistrationForm
+from .services import OrderPaymentService
 from .models import Order, Product
 from decimal import Decimal
+from core.roles import ROLE_ADMIN, ROLE_PROVIDER, get_user_role
 
 
 def _get_cart_from_session(request):
@@ -43,6 +47,13 @@ def _calculate_cart_total(cart):
     return total
 
 
+def _handle_web_error(exc: ApplicationError):
+    status_code = getattr(exc, 'http_status', None) or 403
+    if status_code == 403:
+        return HttpResponseForbidden(str(exc))
+    return HttpResponse(str(exc), status=status_code)
+
+
 def _get_cart_items(cart):
     """Obtiene los items del carrito con detalles del producto"""
     items = []
@@ -61,15 +72,6 @@ def _get_cart_items(cart):
 
 def home(request):
     """Vista principal del sitio - Dashboard"""
-    # Estadísticas
-    total_orders = Order.objects.count()
-    paid_orders = Order.objects.filter(status=Order.STATUS_PAID).count()
-    
-    # Ingresos totales
-    total_revenue = Order.objects.filter(
-        status=Order.STATUS_PAID
-    ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-    
     # Productos destacados (los 3 primeros)
     featured_products = Product.objects.all()[:3]
     
@@ -77,9 +79,7 @@ def home(request):
     cart_count = _get_cart_count(request)
     
     context = {
-        'total_orders': total_orders,
-        'paid_orders': paid_orders,
-        'total_revenue': f"{total_revenue:.2f}",
+        **build_indicator_context(request.user),
         'featured_products': featured_products,
         'cart_count': cart_count,
     }
@@ -210,6 +210,8 @@ def checkout_view(request):
                 'total_amount': total_amount,
                 'provider': provider,
             }
+            if request.user.is_authenticated:
+                order_data['user_id'] = request.user.id
             order, payment = service.create_order_and_payment(order_data)
             
             # Limpiar carrito
@@ -223,20 +225,12 @@ def checkout_view(request):
             }
             return render(request, 'core/order_payment_success.html', context)
             
-        except ValueError as exc:
+        except ApplicationError as exc:
             context = {
                 'cart_items': cart_items,
                 'cart_total': f"{total_amount:.2f}",
                 'cart_count': _get_cart_count(request),
                 'error': str(exc)
-            }
-            return render(request, 'core/checkout.html', context)
-        except ValidationError as exc:
-            context = {
-                'cart_items': cart_items,
-                'cart_total': f"{total_amount:.2f}",
-                'cart_count': _get_cart_count(request),
-                'error': 'Error en validación de datos'
             }
             return render(request, 'core/checkout.html', context)
     
@@ -246,6 +240,126 @@ def checkout_view(request):
         'cart_count': sum(cart.values()),
     }
     return render(request, 'core/checkout.html', context)
+
+
+@login_required
+def account_view(request):
+    role = get_user_role(request.user)
+    show_buyer_sections = role != ROLE_PROVIDER
+    orders = []
+    certificates = []
+    provider_products = []
+    provider_orders = []
+    provider_metrics = {}
+
+    if show_buyer_sections:
+        orders = build_list_user_orders_use_case().execute(request.user.id)
+        certificates = build_list_user_certificates_use_case().execute(request.user.id)
+    else:
+        summary = build_provider_account_summary(request.user)
+        provider_products = summary.products
+        provider_orders = summary.orders
+        provider_metrics = summary.metrics
+
+    role_label = 'Administrador' if role == ROLE_ADMIN else 'Proveedor' if role == ROLE_PROVIDER else 'Comprador'
+    context = {
+        'account_role': role,
+        'account_role_label': role_label,
+        'show_buyer_sections': show_buyer_sections,
+        'orders': orders,
+        'certificates': certificates,
+        'provider_products': provider_products,
+        'provider_orders': provider_orders,
+        'provider_metrics': provider_metrics,
+        'cart_count': _get_cart_count(request),
+    }
+    return render(request, 'core/account.html', context)
+
+
+@login_required
+def order_history_view(request):
+    orders = build_list_user_orders_use_case().execute(request.user.id)
+    context = {
+        'orders': orders,
+        'cart_count': _get_cart_count(request),
+    }
+    return render(request, 'core/order_history.html', context)
+
+
+@login_required
+def order_detail_view(request, order_id):
+    try:
+        detail = build_get_order_detail_use_case().execute(order_id, user_id=request.user.id)
+        certificate = build_get_certificate_by_order_use_case().execute(order_id, user_id=request.user.id)
+    except ApplicationError as exc:
+        return _handle_web_error(exc)
+    context = {
+        'detail': detail,
+        'certificate': certificate,
+        'cart_count': _get_cart_count(request),
+    }
+    return render(request, 'core/order_detail.html', context)
+
+
+@login_required
+def create_certificate_view(request, order_id):
+    if request.method != 'POST':
+        return redirect('core:order-detail', order_id=order_id)
+    try:
+        existing = build_get_certificate_by_order_use_case().execute(order_id, user_id=request.user.id)
+        if existing:
+            return redirect('core:certificate-detail', certificate_id=existing.id)
+        detail = build_get_order_detail_use_case().execute(order_id, user_id=request.user.id)
+        course_name = f"Compra EcoFarm #{detail.order.id}"
+        use_case = build_create_certificate_use_case()
+        certificate = use_case.execute(
+            CertificateCreateRequest(order_id=order_id, course_name=course_name, user_id=request.user.id)
+        )
+    except ApplicationError as exc:
+        return _handle_web_error(exc)
+    return redirect('core:certificate-detail', certificate_id=certificate.id)
+
+
+@login_required
+def certificate_detail_view(request, certificate_id):
+    try:
+        certificate = build_get_certificate_use_case().execute(certificate_id, user_id=request.user.id)
+    except ApplicationError as exc:
+        return _handle_web_error(exc)
+    context = {
+        'certificate': certificate,
+        'cart_count': _get_cart_count(request),
+    }
+    return render(request, 'core/certificate_detail.html', context)
+
+
+@login_required
+def certificate_download_view(request, certificate_id):
+    try:
+        certificate = build_get_certificate_use_case().execute(certificate_id, user_id=request.user.id)
+        provider = build_certificate_provider()
+        pdf_bytes = provider.download_certificate_pdf(certificate.download_url or '')
+    except ApplicationError as exc:
+        return _handle_web_error(exc)
+    response = HttpResponse(pdf_bytes, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename=\"certificate-{certificate.id}.pdf\"'
+    return response
+
+
+def register_view(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('core:account')
+    else:
+        form = UserRegistrationForm()
+    context = {
+        'form': form,
+        'cart_count': _get_cart_count(request),
+    }
+    return render(request, 'core/register.html', context)
 
 
 class OrderPaymentCreateView(View):
@@ -262,48 +376,20 @@ class OrderPaymentCreateView(View):
             return render(request, self.template_name, {'form': form, 'cart_count': _get_cart_count(request)})
 
         service = OrderPaymentService()
-        order, payment = service.create_order_and_payment(form.cleaned_data)
+        form_data = dict(form.cleaned_data)
+        if request.user.is_authenticated:
+            form_data['user_id'] = request.user.id
+        try:
+            order, payment = service.create_order_and_payment(form_data)
+        except ApplicationError as exc:
+            return render(
+                request,
+                self.template_name,
+                {'form': form, 'cart_count': _get_cart_count(request), 'error': str(exc)},
+            )
         context = {
             'order': order,
             'payment': payment,
             'cart_count': _get_cart_count(request),
         }
         return render(request, self.success_template_name, context)
-
-
-class OrderPaymentAPIView(APIView):
-    """API endpoint to create an order along with a payment."""
-
-    def post(self, request):
-        serializer = OrderPaymentInputSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            service = OrderPaymentService()
-            order, payment = service.create_order_and_payment(serializer.validated_data)
-        except ValueError as exc:
-            # unsupported provider or other business conflict
-            return Response({'detail': str(exc)}, status=status.HTTP_409_CONFLICT)
-        except ValidationError as exc:
-            # builder/model validation failed
-            return Response(exc.message_dict or str(exc), status=status.HTTP_400_BAD_REQUEST)
-
-        output = {
-            'order': OrderSerializer(order).data,
-            'payment': PaymentSerializer(payment).data,
-        }
-        return Response(output, status=status.HTTP_201_CREATED)
-
-
-class OrderDetailAPIView(APIView):
-    """Retrieve a single order by its primary key."""
-
-    def get(self, request, pk):
-        from .models import Order
-
-        try:
-            order = Order.objects.get(pk=pk)
-        except Order.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        serializer = OrderSerializer(order)
-        return Response(serializer.data)
