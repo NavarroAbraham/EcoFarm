@@ -16,7 +16,7 @@ from core.application.use_cases import CreateCertificateUseCase, CreateOrderUseC
 from core.domain.entities import Order, Payment, OrderStatus, PaymentStatus
 from core.infrastructure.wiring import build_certificate_repository, build_order_repository
 
-from .models import Certificate, Order as OrderModel, Payment as PaymentModel
+from .models import Certificate, Order as OrderModel, Payment as PaymentModel, Product, UserProfile
 from .services import OrderPaymentService
 
 
@@ -290,6 +290,34 @@ class CertificateAndAccountTests(TestCase):
         response = self.client.get(reverse('core:account'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertContains(response, 'Compra EcoFarm')
+
+    def test_account_shows_provider_sections(self):
+        provider = get_user_model().objects.create_user(
+            username='provider',
+            email='provider@example.com',
+            password='pass12345',
+        )
+        UserProfile.objects.update_or_create(user=provider, defaults={'role': UserProfile.ROLE_PROVIDER})
+        product = Product.objects.create(
+            name='Café Orgánico',
+            description='Café de altura',
+            price=Decimal('18.00'),
+            category='Organic',
+            provider=provider,
+        )
+        OrderModel.objects.create(
+            customer_name='Comprador',
+            customer_email='buyer@example.com',
+            total_amount=Decimal('18.00'),
+            status=OrderModel.STATUS_PAID,
+            product=product,
+        )
+        self.client.force_login(provider)
+        response = self.client.get(reverse('core:account'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, 'Productos gestionados')
+        self.assertContains(response, 'Café Orgánico')
+        self.assertNotContains(response, 'Certificados')
 
     def test_order_detail_forbidden_for_other_user(self):
         other = get_user_model().objects.create_user(username='other', password='pass12345')

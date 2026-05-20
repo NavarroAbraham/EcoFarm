@@ -27,9 +27,14 @@
                 <span>Correo</span>
                 <strong>{{ user.email|default:'Sin correo' }}</strong>
             </div>
+            <div class="product-meta">
+                <span>Rol</span>
+                <strong>{{ account_role_label }}</strong>
+            </div>
         </div>
     </div>
 
+    {% if show_buyer_sections %}
     <div class="section">
         <div class="section-header">
             <div>
@@ -102,5 +107,105 @@
         <p class="section-subtitle">Aún no tienes certificados emitidos.</p>
         {% endif %}
     </div>
+    {% else %}
+    <div class="section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Resumen de actividad</h2>
+                <p class="section-subtitle">Indicadores clave de tu operación como proveedor.</p>
+            </div>
+        </div>
+        <div class="cart-summary">
+            <div class="product-meta">
+                <span>Productos activos</span>
+                <strong>{{ provider_metrics.products_count }}</strong>
+            </div>
+            <div class="product-meta">
+                <span>Pedidos recibidos</span>
+                <strong>{{ provider_metrics.orders_count }}</strong>
+            </div>
+            <div class="product-meta">
+                <span>Pagos confirmados</span>
+                <strong>{{ provider_metrics.paid_orders_count }}</strong>
+            </div>
+            <div class="product-meta">
+                <span>Ingresos</span>
+                <strong>${{ provider_metrics.total_revenue|floatformat:2 }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Productos gestionados</h2>
+                <p class="section-subtitle">Inventario publicado bajo tu cuenta.</p>
+            </div>
+        </div>
+        {% if provider_products %}
+        <div class="table-card">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in provider_products %}
+                    <tr>
+                        <td>#{{ product.id }}</td>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.category }}</td>
+                        <td>${{ product.price }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="section-subtitle">Aún no tienes productos asociados a tu cuenta.</p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Pedidos relacionados</h2>
+                <p class="section-subtitle">Órdenes que incluyen tus productos.</p>
+            </div>
+        </div>
+        {% if provider_orders %}
+        <div class="table-card">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Producto</th>
+                        <th>Cliente</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in provider_orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.product.name|default:'Sin producto' }}</td>
+                        <td>{{ order.customer_name }}</td>
+                        <td>${{ order.total_amount }}</td>
+                        <td>{{ order.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="section-subtitle">No tienes pedidos asociados por ahora.</p>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

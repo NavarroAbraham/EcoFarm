@@ -27,8 +27,18 @@
                     {{ form.username }}
                 </div>
                 <div>
+                    <label for="{{ form.email.id_for_label }}">Correo</label>
+                    {{ form.email }}
+                </div>
+            </div>
+            <div class="form-row">
+                <div>
                     <label for="{{ form.password1.id_for_label }}">Contraseña</label>
                     {{ form.password1 }}
+                </div>
+                <div>
+                    <label for="{{ form.role.id_for_label }}">Tipo de cuenta</label>
+                    {{ form.role }}
                 </div>
             </div>
             <div>

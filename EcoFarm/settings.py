@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     # Third party
     'rest_framework',
     # Apps locales
-    'core',
+    'core.apps.CoreConfig',
 ]
 
 MIDDLEWARE = [

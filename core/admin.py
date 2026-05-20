@@ -1,13 +1,13 @@
 from django.contrib import admin
 
-from .models import Certificate, Order, Payment, Product
+from .models import Certificate, Order, Payment, Product, UserProfile
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-	list_display = ('id', 'name', 'category', 'price', 'created_at')
+	list_display = ('id', 'name', 'category', 'price', 'provider', 'created_at')
 	list_filter = ('category', 'created_at')
-	search_fields = ('name', 'description')
+	search_fields = ('name', 'description', 'provider__username')
 
 
 @admin.register(Order)
@@ -29,5 +29,12 @@ class CertificateAdmin(admin.ModelAdmin):
 	list_display = ('id', 'course_name', 'certificate_number', 'order', 'user', 'issued_date', 'created_at')
 	list_filter = ('issued_date', 'created_at')
 	search_fields = ('certificate_number', 'course_name', 'user__username')
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+	list_display = ('user', 'role')
+	list_filter = ('role',)
+	search_fields = ('user__username', 'user__email')
 
 # Register your models here.

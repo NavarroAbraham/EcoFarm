@@ -1,10 +1,9 @@
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
-from django.db.models import Sum, Count
+from django.db.models import Count
 from core.application.dtos import CertificateCreateRequest
 from core.application.errors import ApplicationError
 from core.infrastructure.wiring import (
@@ -17,10 +16,12 @@ from core.infrastructure.wiring import (
     build_list_user_orders_use_case,
 )
 
-from .forms import OrderPaymentForm
+from .account_services import build_indicator_context, build_provider_account_summary
+from .forms import OrderPaymentForm, UserRegistrationForm
 from .services import OrderPaymentService
 from .models import Order, Product
 from decimal import Decimal
+from core.roles import ROLE_ADMIN, ROLE_PROVIDER, get_user_role
 
 
 def _get_cart_from_session(request):
@@ -71,15 +72,6 @@ def _get_cart_items(cart):
 
 def home(request):
     """Vista principal del sitio - Dashboard"""
-    # Estadísticas
-    total_orders = Order.objects.count()
-    paid_orders = Order.objects.filter(status=Order.STATUS_PAID).count()
-    
-    # Ingresos totales
-    total_revenue = Order.objects.filter(
-        status=Order.STATUS_PAID
-    ).aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-    
     # Productos destacados (los 3 primeros)
     featured_products = Product.objects.all()[:3]
     
@@ -87,9 +79,7 @@ def home(request):
     cart_count = _get_cart_count(request)
     
     context = {
-        'total_orders': total_orders,
-        'paid_orders': paid_orders,
-        'total_revenue': f"{total_revenue:.2f}",
+        **build_indicator_context(request.user),
         'featured_products': featured_products,
         'cart_count': cart_count,
     }
@@ -254,11 +244,33 @@ def checkout_view(request):
 
 @login_required
 def account_view(request):
-    orders = build_list_user_orders_use_case().execute(request.user.id)
-    certificates = build_list_user_certificates_use_case().execute(request.user.id)
+    role = get_user_role(request.user)
+    show_buyer_sections = role != ROLE_PROVIDER
+    orders = []
+    certificates = []
+    provider_products = []
+    provider_orders = []
+    provider_metrics = {}
+
+    if show_buyer_sections:
+        orders = build_list_user_orders_use_case().execute(request.user.id)
+        certificates = build_list_user_certificates_use_case().execute(request.user.id)
+    else:
+        summary = build_provider_account_summary(request.user)
+        provider_products = summary.products
+        provider_orders = summary.orders
+        provider_metrics = summary.metrics
+
+    role_label = 'Administrador' if role == ROLE_ADMIN else 'Proveedor' if role == ROLE_PROVIDER else 'Comprador'
     context = {
+        'account_role': role,
+        'account_role_label': role_label,
+        'show_buyer_sections': show_buyer_sections,
         'orders': orders,
         'certificates': certificates,
+        'provider_products': provider_products,
+        'provider_orders': provider_orders,
+        'provider_metrics': provider_metrics,
         'cart_count': _get_cart_count(request),
     }
     return render(request, 'core/account.html', context)
@@ -336,13 +348,13 @@ def certificate_download_view(request, certificate_id):
 
 def register_view(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
             login(request, user)
             return redirect('core:account')
     else:
-        form = UserCreationForm()
+        form = UserRegistrationForm()
     context = {
         'form': form,
         'cart_count': _get_cart_count(request),
