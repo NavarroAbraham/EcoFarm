@@ -1,72 +1,122 @@
 # EcoFarm
 
-## Configuración del proyecto
+Proyecto Django + servicio Flask para generación de certificados.
 
-1. Instalar dependencias:
+## Requisitos
+
+- Python 3.10+ (o el que use su entorno virtual)
+- `pip`
+- Docker (opcional, para despliegue con `docker-compose`)
+
+## Instalación rápida
+
+1. Crear y activar un entorno virtual.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate   # PowerShell: .\.venv\Scripts\Activate.ps1
+```
+
+2. Instalar dependencias principales:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Ejecutar migraciones:
+3. Ejecutar migraciones y crear superusuario:
+
 ```bash
 python manage.py makemigrations
 python manage.py migrate
-```
-
-3. Crear superusuario:
-```bash
 python manage.py createsuperuser
 ```
 
-4. Ejecutar servidor:
+4. Ejecutar servidor de desarrollo Django:
+
 ```bash
 python manage.py runserver
 ```
 
-## Estructura del Proyecto
+## Servicio de certificados (Flask)
+
+El proyecto incluye un microservicio Flask en la carpeta `flask_service` que genera/depura certificados. Para ejecutarlo localmente:
+
+```bash
+cd flask_service
+pip install -r requirements.txt
+python app.py
+```
+
+El adaptador de certificados en `core/adapters/external` usa la variable de entorno `FLASK_CERTIFICATE_URL` (por defecto `http://localhost:5000/`).
+
+## Docker / Docker Compose
+
+Hay un `Dockerfile` y `docker-compose.yml` en la raíz para orquestar la aplicación y el servicio Flask (y nginx si está configurado). Para levantar en modo contenedores:
+
+```bash
+docker-compose up --build
+```
+
+## Estructura principal del proyecto
 
 ```
-EcoFarm/
-├── EcoFarm/          # Configuración principal del proyecto
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   └── asgi.py
-├── static/           # Archivos estáticos
-│   ├── css/
-│   ├── js/
-│   └── images/
-├── media/            # Archivos subidos por usuarios
-├── templates/        # Plantillas HTML globales
+./
+├── Dockerfile
+├── docker-compose.yml
 ├── manage.py
-└── requirements.txt
+├── requirements.txt
+├── db.sqlite3
+├── EcoFarm/             # Configuración del proyecto (settings, urls, wsgi, asgi)
+├── core/                # Aplicación principal (modelos, vistas, api, adapters)
+├── flask_service/       # Servicio Flask para certificados
+├── static/              # Archivos estáticos
+└── templates/           # Plantillas globales
 ```
 
-## API REST (Django REST Framework)
+## Endpoints principales (resumen)
 
-El sistema expone un par de endpoints para crear órdenes y consultar su estado.
+- `POST /api/v1/orders/` — Crear `Order` y `Payment`. Campos: `customer_name`, `customer_email`, `total_amount`, `provider`.
+- `GET /api/v1/orders/<id>/` — Obtener orden por id.
+- `POST /api/v1/ally/orders/` — Endpoint para órdenes entrantes desde aliados.
+- `GET /api/v1/ally/orders/<external_id>/` — Consulta de orden externa.
 
-| Método | URL                              | Descripción                                   |
-|--------|----------------------------------|-----------------------------------------------|
-| POST   | `/api/v1/orders/`                | Crear `Order` + `Payment`. Retorna 201 con el objeto creado y el pago asociado. Campos: `customer_name`, `customer_email`, `total_amount`, `provider` (si no es reconocido responde 409). |
-| GET    | `/api/v1/orders/<id>/`           | Obtener los datos de una orden existente. 404 si no existe. |
-| POST   | `/api/v1/ally/orders/`           | Endpoint para órdenes entrantes de un aliado (contrato externo). |
-| GET    | `/api/v1/ally/orders/<external_id>/` | Consulta de una orden externa via adapter stub. |
+Rutas relacionadas a cuenta y certificados (requieren autenticación):
 
-Los errores de validación devuelven 400, y si se solicita un `provider` no soportado se responde con 409.
+- `GET /api/v1/account/orders/` — Órdenes del usuario autenticado.
+- `GET /api/v1/account/orders/<id>/` — Detalle de orden con pagos.
+- `GET /api/v1/certificates/` — Lista certificados del usuario autenticado.
+- `POST /api/v1/certificates/create/` — Genera certificado (`order_id`, `course_name`).
+- `GET /api/v1/certificates/<id>/download/` — Descargar PDF del certificado.
 
-### Cuenta y certificados (requiere autenticación)
+## Variables de entorno importantes
 
-| Método | URL                                   | Descripción |
-|--------|---------------------------------------|-------------|
-| GET    | `/api/v1/account/orders/`             | Lista órdenes del usuario autenticado. |
-| GET    | `/api/v1/account/orders/<id>/`        | Detalle de orden con pagos. |
-| GET    | `/api/v1/certificates/`               | Lista certificados del usuario autenticado. |
-| POST   | `/api/v1/certificates/create/`        | Genera certificado para una orden (`order_id`, `course_name`). |
-| GET    | `/api/v1/certificates/<id>/`          | Detalle de certificado. |
-| GET    | `/api/v1/certificates/<id>/download/` | Descarga PDF del certificado. |
+- `FLASK_CERTIFICATE_URL` — URL base del servicio Flask (por defecto `http://localhost:5000/`).
 
-### Integración externa (certificados)
+## Tests
 
-El adapter de certificados consume el servicio Flask usando la variable de entorno `FLASK_CERTIFICATE_URL` (por defecto `http://localhost:5000/`).
+- Ejecutar tests Django:
+
+```bash
+python manage.py test
+```
+
+- Tests en el servicio Flask (si aplica):
+
+```bash
+cd flask_service
+pytest
+```
+
+## Notas
+
+- Si el `provider` no es reconocido por la API de órdenes, el servicio responde con 409.
+- Los errores de validación devuelven 400.
+- Para producción, configure una base de datos externa y ajuste `EcoFarm/settings.py`.
+
+Si quieres, puedo también:
+
+- Ejecutar la suite de tests ahora.
+- Preparar un `docker-compose.override.yml` para desarrollo.
+- Añadir instrucciones de despliegue paso a paso.
+
 
